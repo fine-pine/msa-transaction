@@ -1,1 +1,3 @@
-rootProject.name = 'demo'
+rootProject.name = 'msa-transaction'
+
+include 'account', 'inventory', 'shipping'

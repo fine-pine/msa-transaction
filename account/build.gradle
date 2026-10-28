@@ -1,13 +1,4 @@
-plugins {
-	id 'com.google.protobuf'
-}
-
 dependencies {
+	implementation project(':contract')
 	implementation 'org.springframework.boot:spring-boot-starter-grpc-server'
-}
-
-protobuf {
-	plugins {
-		grpc {}
-	}
 }

@@ -1,7 +1,5 @@
 package com.example.inventory;
 
-import java.math.BigDecimal;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -20,14 +18,23 @@ public class Product {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false, length = 100)
+	@Column(nullable = false)
 	private String name;
 
-	@Column(nullable = false, precision = 19, scale = 2)
-	private BigDecimal price;
+	@Column(nullable = false)
+	private Long price;
 
 	@Column(nullable = false)
 	private Integer quantity;
+
+	public Product(String name, long price, int quantity) {
+		if (price <= 0) {
+			throw new IllegalArgumentException("가격은 0보다 커야 합니다. price=" + price);
+		}
+		this.name = name;
+		this.price = price;
+		this.quantity = quantity;
+	}
 
 	public void decrease(int amount) {
 		if (quantity < amount) {

@@ -1,7 +1,5 @@
 package com.example.account;
 
-import java.math.BigDecimal;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -23,18 +21,18 @@ public class Account {
 	@Column(nullable = false)
 	private Long userId;
 
-	@Column(nullable = false, precision = 19, scale = 2)
-	private BigDecimal balance;
+	@Column(nullable = false)
+	private Long balance;
 
-	public void withdraw(BigDecimal amount) {
-		if (balance.compareTo(amount) < 0) {
+	public void withdraw(long amount) {
+		if (balance < amount) {
 			throw new IllegalStateException("잔액이 부족합니다. accountId=" + id);
 		}
-		this.balance = balance.subtract(amount);
+		this.balance = balance - amount;
 	}
 
-	public void deposit(BigDecimal amount) {
-		this.balance = balance.add(amount);
+	public void deposit(long amount) {
+		this.balance = Math.addExact(balance, amount);
 	}
 
 }

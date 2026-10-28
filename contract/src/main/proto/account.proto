@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package account;
+
+option java_multiple_files = true;
+option java_package = "com.example.grpc.account";
+option java_outer_classname = "AccountProto";
+
+service AccountService {
+  rpc Withdraw(WithdrawRequest) returns (WithdrawResponse);
+  rpc Refund(RefundRequest) returns (RefundResponse);
+}
+
+message WithdrawRequest {
+  int64 account_id = 1;
+  int64 amount = 2;
+}
+
+message WithdrawResponse {
+}
+
+message RefundRequest {
+  int64 account_id = 1;
+  int64 amount = 2;
+}
+
+message RefundResponse {
+}

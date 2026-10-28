@@ -1,7 +1,5 @@
 package com.example.account;
 
-import java.math.BigDecimal;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,8 +12,8 @@ public class AccountService {
 	private final AccountRepository accountRepository;
 
 	@Transactional
-	public void withdraw(Long accountId, BigDecimal amount) {
-		if (amount == null || amount.signum() <= 0) {
+	public void withdraw(Long accountId, long amount) {
+		if (amount <= 0) {
 			throw new IllegalArgumentException("금액은 0보다 커야 합니다. amount=" + amount);
 		}
 		Account account = accountRepository.findById(accountId)
@@ -24,8 +22,8 @@ public class AccountService {
 	}
 
 	@Transactional
-	public void refund(Long accountId, BigDecimal amount) {
-		if (amount == null || amount.signum() <= 0) {
+	public void refund(Long accountId, long amount) {
+		if (amount <= 0) {
 			throw new IllegalArgumentException("금액은 0보다 커야 합니다. amount=" + amount);
 		}
 		Account account = accountRepository.findById(accountId)

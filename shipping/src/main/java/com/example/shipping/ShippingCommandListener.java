@@ -22,16 +22,16 @@ public class ShippingCommandListener {
 		try {
 			reply = switch (command) {
 				case ShippingCommand.Create create -> {
-					Long shipmentId = shipmentService.create(create.address());
-					yield new ShippingReply.Created(shipmentId);
+					Long shipmentId = shipmentService.create(create.orderId(), create.address());
+					yield new ShippingReply.Created(create.orderId(), shipmentId);
 				}
 				case ShippingCommand.Cancel cancel -> {
 					shipmentService.cancel(cancel.shipmentId());
-					yield new ShippingReply.Cancelled(cancel.shipmentId());
+					yield new ShippingReply.Cancelled(cancel.orderId(), cancel.shipmentId());
 				}
 			};
 		} catch (IllegalArgumentException e) {
-			reply = new ShippingReply.Failed(e.getMessage());
+			reply = new ShippingReply.Failed(command.orderId(), e.getMessage());
 		}
 		kafkaTemplate.send(ShippingReply.TOPIC, reply);
 	}

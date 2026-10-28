@@ -20,14 +20,18 @@ public class Shipment {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	@Column(nullable = false, unique = true)
+	private Long orderId;
+
 	@Column(nullable = false)
 	private String address;
 
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false, length = 20)
+	@Column(nullable = false)
 	private ShipmentStatus status;
 
-	public Shipment(String address) {
+	public Shipment(Long orderId, String address) {
+		this.orderId = orderId;
 		this.address = address;
 		this.status = ShipmentStatus.REQUESTED;
 	}

@@ -4,10 +4,12 @@ public sealed interface ShippingCommand {
 
 	String TOPIC = "shipping.command";
 
-	record Create(String address) implements ShippingCommand {
+	Long orderId();
+
+	record Create(Long orderId, String address) implements ShippingCommand {
 	}
 
-	record Cancel(Long shipmentId) implements ShippingCommand {
+	record Cancel(Long orderId, Long shipmentId) implements ShippingCommand {
 	}
 
 }

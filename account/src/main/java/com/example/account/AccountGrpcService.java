@@ -19,7 +19,7 @@ public class AccountGrpcService extends AccountServiceGrpc.AccountServiceImplBas
 
 	@Override
 	public void withdraw(WithdrawRequest request, StreamObserver<WithdrawResponse> observer) {
-		accountService.withdraw(request.getAccountId(), request.getAmount());
+		accountService.withdraw(request.getOrderId(), request.getAccountId(), request.getAmount());
 		WithdrawResponse response = WithdrawResponse.getDefaultInstance();
 		observer.onNext(response);
 		observer.onCompleted();
@@ -27,7 +27,7 @@ public class AccountGrpcService extends AccountServiceGrpc.AccountServiceImplBas
 
 	@Override
 	public void refund(RefundRequest request, StreamObserver<RefundResponse> observer) {
-		accountService.refund(request.getAccountId(), request.getAmount());
+		accountService.refund(request.getOrderId(), request.getAccountId(), request.getAmount());
 		RefundResponse response = RefundResponse.getDefaultInstance();
 		observer.onNext(response);
 		observer.onCompleted();

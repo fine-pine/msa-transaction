@@ -1,0 +1,11 @@
+package com.example.inventory;
+
+public enum OrderStatus {
+	STARTED,
+	STOCK_DECREASED,
+	ACCOUNT_WITHDRAWN,
+	SHIPPING_REQUESTED,
+	COMPLETED,
+	ACCOUNT_COMPENSATING,
+	FAILED
+}

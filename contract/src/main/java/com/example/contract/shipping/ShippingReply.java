@@ -4,13 +4,15 @@ public sealed interface ShippingReply {
 
 	String TOPIC = "shipping.reply";
 
-	record Created(Long shipmentId) implements ShippingReply {
+	Long orderId();
+
+	record Created(Long orderId, Long shipmentId) implements ShippingReply {
 	}
 
-	record Cancelled(Long shipmentId) implements ShippingReply {
+	record Cancelled(Long orderId, Long shipmentId) implements ShippingReply {
 	}
 
-	record Failed(String reason) implements ShippingReply {
+	record Failed(Long orderId, String reason) implements ShippingReply {
 	}
 
 }

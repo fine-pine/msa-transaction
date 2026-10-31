@@ -18,3 +18,12 @@ CREATE TABLE IF NOT EXISTS orders (
     status     VARCHAR(20)  NOT NULL,
     PRIMARY KEY (id)
 );
+
+CREATE TABLE IF NOT EXISTS outbox (
+    id       BIGINT      NOT NULL AUTO_INCREMENT,
+    topic    VARCHAR(50) NOT NULL,
+    order_id BIGINT      NOT NULL,
+    type     VARCHAR(20) NOT NULL,
+    payload  JSON        NOT NULL,
+    PRIMARY KEY (id)
+);

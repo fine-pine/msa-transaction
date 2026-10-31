@@ -11,6 +11,7 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "orders")
@@ -37,6 +38,7 @@ public class Order {
 	@Column(nullable = false)
 	private String address;
 
+	@Setter
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private OrderStatus status;
@@ -54,10 +56,6 @@ public class Order {
 		this.amount = amount;
 		this.address = address;
 		this.status = OrderStatus.STARTED;
-	}
-
-	public void changeStatus(OrderStatus status) {
-		this.status = status;
 	}
 
 }

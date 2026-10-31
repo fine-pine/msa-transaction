@@ -7,9 +7,11 @@ public sealed interface ShippingCommand {
 	Long orderId();
 
 	record Create(Long orderId, String address) implements ShippingCommand {
+		public static final String TYPE = "CREATE";
 	}
 
 	record Cancel(Long orderId, Long shipmentId) implements ShippingCommand {
+		public static final String TYPE = "CANCEL";
 	}
 
 }

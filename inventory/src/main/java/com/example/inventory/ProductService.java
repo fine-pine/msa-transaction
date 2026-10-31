@@ -13,27 +13,18 @@ public class ProductService {
 	private final OrderRepository orderRepository;
 
 	@Transactional
-	public void decrease(Long orderId) {
+	public boolean decrease(Long productId, int quantity) {
 		// 락 획득
-		Order order = findOrder(orderId);
+		Product product = findProduct(productId);
 
-		// 멱등 처리
-		if (order.getStatus() != OrderStatus.STARTED) {
-			return;
+		// 재고 확인
+		if (product.getQuantity() < quantity) {
+			return false;
 		}
 
 		// 재고 차감
-		decrease(order.getProductId(), order.getQuantity());
-		order.changeStatus(OrderStatus.STOCK_DECREASED);
-	}
-
-	@Transactional
-	public void decrease(Long productId, int quantity) {
-		if (quantity <= 0) {
-			throw new IllegalArgumentException("수량은 0보다 커야 합니다. quantity=" + quantity);
-		}
-		Product product = findProduct(productId);
 		product.decrease(quantity);
+		return true;
 	}
 
 	@Transactional
@@ -48,7 +39,7 @@ public class ProductService {
 
 		// 재고 복구
 		increase(order.getProductId(), order.getQuantity());
-		order.changeStatus(OrderStatus.FAILED);
+		order.setStatus(OrderStatus.FAILED);
 	}
 
 	@Transactional

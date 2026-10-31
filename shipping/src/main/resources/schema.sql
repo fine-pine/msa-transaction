@@ -6,3 +6,12 @@ CREATE TABLE IF NOT EXISTS shipment (
     PRIMARY KEY (id),
     CONSTRAINT uk_shipment_order UNIQUE (order_id)
 );
+
+CREATE TABLE IF NOT EXISTS outbox (
+    id       BIGINT      NOT NULL AUTO_INCREMENT,
+    topic    VARCHAR(50) NOT NULL,
+    order_id BIGINT      NOT NULL,
+    type     VARCHAR(20) NOT NULL,
+    payload  JSON        NOT NULL,
+    PRIMARY KEY (id)
+);

@@ -1,5 +1,7 @@
 package com.example.inventory;
 
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.stereotype.Component;
 
 import com.example.grpc.account.AccountServiceGrpc;
@@ -12,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AccountClient {
 
+	private static final long DEADLINE_SECONDS = 3;
+
 	private final AccountServiceGrpc.AccountServiceBlockingStub stub;
 
 	public void withdraw(Long orderId, Long accountId, long amount) {
@@ -20,7 +24,7 @@ public class AccountClient {
 				.setAccountId(accountId)
 				.setAmount(amount)
 				.build();
-		stub.withdraw(request);
+		stub.withDeadlineAfter(DEADLINE_SECONDS, TimeUnit.SECONDS).withdraw(request);
 	}
 
 	public void refund(Long orderId, Long accountId, long amount) {
@@ -29,7 +33,7 @@ public class AccountClient {
 				.setAccountId(accountId)
 				.setAmount(amount)
 				.build();
-		stub.refund(request);
+		stub.withDeadlineAfter(DEADLINE_SECONDS, TimeUnit.SECONDS).refund(request);
 	}
 
 }

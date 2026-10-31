@@ -6,7 +6,9 @@ import org.springframework.stereotype.Component;
 import com.example.contract.shipping.ShippingCommand;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ShippingCommandListener {
@@ -21,8 +23,9 @@ public class ShippingCommandListener {
 				case ShippingCommand.Cancel cancel -> shipmentService.cancel(cancel.shipmentId());
 			}
 		} catch (IllegalArgumentException e) {
+			log.warn("배송 명령 실패. orderId={}, reason={}", command.orderId(), e.getMessage());
 			shipmentService.fail(command.orderId(), e.getMessage());
-		}
+		} // 기타 에러는 Kafka 재시도
 	}
 
 }

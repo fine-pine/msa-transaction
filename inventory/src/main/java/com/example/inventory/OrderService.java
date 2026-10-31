@@ -1,5 +1,8 @@
 package com.example.inventory;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -78,10 +81,31 @@ public class OrderService {
 		outboxService.append(ShippingCommand.TOPIC, orderId, ShippingCommand.Create.TYPE, command);
 	}
 
+	@Transactional
+	public void resendShipping(Long orderId) {
+		// 락 획득
+		Order order = orderRepository.findWithLockById(orderId)
+				.orElseThrow(() -> new IllegalArgumentException("주문이 없습니다. orderId=" + orderId));
+
+		// 상태 확인
+		if (order.getStatus() != OrderStatus.SHIPPING_REQUESTED) {
+			return;
+		}
+
+		// 메시지 발행
+		ShippingCommand command = new ShippingCommand.Create(orderId, order.getAddress());
+		outboxService.append(ShippingCommand.TOPIC, orderId, ShippingCommand.Create.TYPE, command);
+	}
+
 	@Transactional(readOnly = true)
 	public Order get(Long orderId) {
 		return orderRepository.findById(orderId)
 				.orElseThrow(() -> new IllegalArgumentException("주문이 없습니다. orderId=" + orderId));
+	}
+
+	@Transactional(readOnly = true)
+	public List<Order> findByStatusAndModifiedAtBefore(OrderStatus status, LocalDateTime modifiedAt) {
+		return orderRepository.findByStatusAndModifiedAtBefore(status, modifiedAt);
 	}
 
 }

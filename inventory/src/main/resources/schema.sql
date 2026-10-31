@@ -9,13 +9,15 @@ CREATE TABLE IF NOT EXISTS product (
 );
 
 CREATE TABLE IF NOT EXISTS orders (
-    id         BIGINT       NOT NULL AUTO_INCREMENT,
-    product_id BIGINT       NOT NULL,
-    quantity   INT          NOT NULL,
-    account_id BIGINT       NOT NULL,
-    amount     BIGINT       NOT NULL,
-    address    VARCHAR(255) NOT NULL,
-    status     VARCHAR(20)  NOT NULL,
+    id          BIGINT       NOT NULL AUTO_INCREMENT,
+    product_id  BIGINT       NOT NULL,
+    quantity    INT          NOT NULL,
+    account_id  BIGINT       NOT NULL,
+    amount      BIGINT       NOT NULL,
+    address     VARCHAR(255) NOT NULL,
+    status      VARCHAR(20)  NOT NULL,
+    created_at  DATETIME(6)  NOT NULL,
+    modified_at DATETIME(6)  NOT NULL,
     PRIMARY KEY (id)
 );
 

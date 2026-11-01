@@ -1,18 +1,44 @@
 package com.example.shipping;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.contract.shipping.ShippingCommand;
 import com.example.contract.shipping.ShippingReply;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ShipmentService {
 
 	private final ShipmentRepository shipmentRepository;
 	private final OutboxService outboxService;
+
+	@Transactional
+	public void handleAll(List<ShippingCommand> commands) {
+		for (ShippingCommand command : commands) {
+			handle(command);
+		}
+	}
+
+	@Transactional
+	public void handle(ShippingCommand command) {
+		try {
+			switch (command) {
+				case ShippingCommand.Create create -> create(create.orderId(), create.address());
+				case ShippingCommand.Cancel cancel -> cancel(cancel.shipmentId());
+			}
+		} catch (IllegalArgumentException e) {
+			// 실패 응답
+			log.warn("배송 명령 실패. orderId={}, reason={}", command.orderId(), e.getMessage());
+			fail(command.orderId(), e.getMessage());
+		}
+	}
 
 	@Transactional
 	public void create(Long orderId, String address) {

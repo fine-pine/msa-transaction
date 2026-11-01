@@ -19,7 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class OrderSaga {
 
-	private static final long STALE_SECONDS = 30;
+	// 타임아웃 + 커넥션 대기
+	private static final long STALE_SECONDS = 35;
 
 	private final OrderService orderService;
 	private final ProductService productService;
@@ -46,11 +47,8 @@ public class OrderSaga {
 			if (code == Status.Code.INVALID_ARGUMENT || code == Status.Code.FAILED_PRECONDITION) {
 				throw new IllegalStateException(e.getStatus().getDescription());
 			}
-
-			// 기타 실패
 			throw e;
 		}
-		orderService.changeStatus(order.getId(), OrderStatus.STOCK_DECREASED, OrderStatus.ACCOUNT_WITHDRAWN);
 
 		// 배송 (Kafka)
 		orderService.requestShipping(order.getId());
@@ -74,12 +72,17 @@ public class OrderSaga {
 		// 출금 단계
 		List<Order> withdrawing = orderService.findByStatusAndModifiedAtBefore(OrderStatus.STOCK_DECREASED, threshold);
 		for (Order order : withdrawing) {
-			orderService.changeStatus(order.getId(), OrderStatus.STOCK_DECREASED, OrderStatus.ACCOUNT_COMPENSATING);
-			compensate(order.getId());
+			try {
+				orderService.changeStatus(order.getId(), OrderStatus.STOCK_DECREASED, OrderStatus.ACCOUNT_COMPENSATING);
+				compensate(order.getId());
+			} catch (RuntimeException e) {
+				// 장애 격리
+				log.warn("보상 전환 실패. orderId={}", order.getId(), e);
+			}
 		}
 
 		// 보상 단계
-		List<Order> compensating = orderService.findByStatusAndModifiedAtBefore(OrderStatus.ACCOUNT_COMPENSATING, threshold);
+		List<Order> compensating = orderService.findByStatus(OrderStatus.ACCOUNT_COMPENSATING);
 		for (Order order : compensating) {
 			compensate(order.getId());
 		}
@@ -90,23 +93,22 @@ public class OrderSaga {
 	public void retryShipping() {
 		LocalDateTime threshold = LocalDateTime.now().minusSeconds(STALE_SECONDS);
 
-		// 배송 요청 단계
-		List<Order> withdrawn = orderService.findByStatusAndModifiedAtBefore(OrderStatus.ACCOUNT_WITHDRAWN, threshold);
-		for (Order order : withdrawn) {
-			orderService.requestShipping(order.getId());
-		}
-
 		// 배송 응답 대기 단계
 		// 에러가 반복되는 경우 수동 처리
 		List<Order> requested = orderService.findByStatusAndModifiedAtBefore(OrderStatus.SHIPPING_REQUESTED, threshold);
 		for (Order order : requested) {
-			orderService.resendShipping(order.getId());
+			try {
+				orderService.resendShipping(order.getId());
+			} catch (RuntimeException e) {
+				// 장애 격리
+				log.warn("배송 재발행 실패. orderId={}", order.getId(), e);
+			}
 		}
 	}
 
 	private void compensate(Long orderId) {
-		Order order = orderService.get(orderId);
 		try {
+			Order order = orderService.get(orderId);
 			accountClient.refund(orderId, order.getAccountId(), order.getAmount());
 			productService.increase(orderId);
 		} catch (RuntimeException e) {

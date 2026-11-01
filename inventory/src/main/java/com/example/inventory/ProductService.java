@@ -37,7 +37,7 @@ public class ProductService {
 			return;
 		}
 
-		// 재고 복구
+		// 재고 적재
 		increase(order.getProductId(), order.getQuantity());
 		order.setStatus(OrderStatus.FAILED);
 	}

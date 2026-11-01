@@ -14,6 +14,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	Optional<Order> findWithLockById(Long id);
 
+	List<Order> findByStatus(OrderStatus status);
+
 	List<Order> findByStatusAndModifiedAtBefore(OrderStatus status, LocalDateTime modifiedAt);
 
 }

@@ -10,9 +10,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.grpc.StatusRuntimeException;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -44,16 +46,16 @@ public class OrderController {
 		return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
 	}
 
-	@ExceptionHandler(StatusRuntimeException.class)
-	public ProblemDetail handle(StatusRuntimeException e) {
-		return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, "잠시 후 다시 시도해주세요.");
+	@ExceptionHandler(ArithmeticException.class)
+	public ProblemDetail handle(ArithmeticException e) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "주문 금액이 허용 범위를 넘었습니다.");
 	}
 
 	public record OrderRequest(
 			@NotNull Long productId,
-			@NotNull Integer quantity,
+			@NotNull @Positive Integer quantity,
 			@NotNull Long accountId,
-			@NotNull String address) {
+			@NotBlank @Size(max = 255) String address) {
 	}
 
 	public record OrderResponse(Long orderId, OrderStatus status) {

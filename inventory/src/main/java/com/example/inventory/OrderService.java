@@ -21,8 +21,8 @@ public class OrderService {
 
 	@Transactional
 	public Order createAndDecreaseStock(Long productId, int quantity, Long accountId, String address) {
-		// 상품 조회
-		Product product = productRepository.findById(productId)
+		// 락 획득
+		Product product = productRepository.findWithLockById(productId)
 				.orElseThrow(() -> new IllegalArgumentException("상품이 없습니다. productId=" + productId));
 
 		// 주문 생성
@@ -71,7 +71,7 @@ public class OrderService {
 		}
 
 		// 상태 확인
-		if (order.getStatus() != OrderStatus.ACCOUNT_WITHDRAWN) {
+		if (order.getStatus() != OrderStatus.STOCK_DECREASED) {
 			throw new IllegalStateException("주문 상태가 맞지 않습니다. orderId=" + orderId);
 		}
 		order.setStatus(OrderStatus.SHIPPING_REQUESTED);
@@ -101,6 +101,11 @@ public class OrderService {
 	public Order get(Long orderId) {
 		return orderRepository.findById(orderId)
 				.orElseThrow(() -> new IllegalArgumentException("주문이 없습니다. orderId=" + orderId));
+	}
+
+	@Transactional(readOnly = true)
+	public List<Order> findByStatus(OrderStatus status) {
+		return orderRepository.findByStatus(status);
 	}
 
 	@Transactional(readOnly = true)

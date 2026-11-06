@@ -6,6 +6,7 @@
   "database.user": "debezium",
   "database.password": "debezium_pw",
   "database.server.id": "184054",
+  "poll.interval.ms": "100",
   "topic.prefix": "msa",
   "database.include.list": "inventory_db,shipping_db",
   "table.include.list": "inventory_db.outbox,shipping_db.outbox",

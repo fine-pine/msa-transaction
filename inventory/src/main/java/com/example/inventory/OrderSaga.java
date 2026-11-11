@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.listener.BatchListenerFailedException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -55,13 +56,21 @@ public class OrderSaga {
 		return order.getId();
 	}
 
-	@KafkaListener(topics = ShippingReply.TOPIC)
-	public void handle(ShippingReply reply) {
-		if (reply instanceof ShippingReply.Created) {
-			orderService.changeStatus(reply.orderId(), OrderStatus.SHIPPING_REQUESTED, OrderStatus.COMPLETED);
-		} else if (reply instanceof ShippingReply.Failed(Long orderId, String reason)) {
-			log.warn("배송 실패. orderId={}, reason={}", orderId, reason);
-		} // 기타 에러는 Kafka 재시도
+	@KafkaListener(topics = ShippingReply.TOPIC, batch = "true")
+	public void handle(List<ShippingReply> replies) {
+		try {
+			orderService.handleAll(replies);
+		} catch (RuntimeException e) {
+			for (int i = 0; i < replies.size(); i++) {
+				ShippingReply reply = replies.get(i);
+				try {
+					orderService.handle(reply);
+				} catch (RuntimeException ex) {
+					// 장애 격리
+					throw new BatchListenerFailedException("배송 응답 실패", ex, i);
+				}
+			}
+		}
 	}
 
 	// 배치 재시도

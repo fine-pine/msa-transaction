@@ -7,9 +7,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.contract.shipping.ShippingCommand;
+import com.example.contract.shipping.ShippingReply;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -57,6 +60,22 @@ public class OrderService {
 			throw new IllegalStateException("주문 상태가 맞지 않습니다. orderId=" + orderId);
 		}
 		order.setStatus(to);
+	}
+
+	@Transactional
+	public void handleAll(List<ShippingReply> replies) {
+		for (ShippingReply reply : replies) {
+			handle(reply);
+		}
+	}
+
+	@Transactional
+	public void handle(ShippingReply reply) {
+		if (reply instanceof ShippingReply.Created) {
+			changeStatus(reply.orderId(), OrderStatus.SHIPPING_REQUESTED, OrderStatus.COMPLETED);
+		} else if (reply instanceof ShippingReply.Failed(Long orderId, String reason)) {
+			log.warn("배송 실패. orderId={}, reason={}", orderId, reason);
+		} // 기타 에러는 Kafka 재시도
 	}
 
 	@Transactional
